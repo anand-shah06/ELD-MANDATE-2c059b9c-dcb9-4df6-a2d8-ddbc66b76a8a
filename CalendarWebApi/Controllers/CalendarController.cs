@@ -20,9 +20,10 @@ namespace CalendarWebApi.Controllers
         }
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public async Task<ActionResult<IEnumerable<Calendar>>> Get()
         {
-            return new string[] { "value1", "value2" };
+            List<Calendar> calendars = await repository.GetCalendar();
+            return StatusCode(200, calendars);
         }
 
         // GET api/values/5
@@ -48,8 +49,20 @@ namespace CalendarWebApi.Controllers
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
+            List<Calendar> calendars = await repository.GetCalendar();
+            var doCalendarExist = calendars.Exists(c => c.Id == id);
+            if (doCalendarExist)
+            {
+                var calendar = await repository.DeleteEvent(calendars[calendars.FindIndex(c => c.Id == id)]);
+                return StatusCode(200);
+            }
+            else
+            {
+                return StatusCode(404);
+            }
+            
         }
     }
 }
