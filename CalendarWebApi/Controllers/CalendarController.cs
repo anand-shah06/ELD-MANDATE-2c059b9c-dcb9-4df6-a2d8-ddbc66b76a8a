@@ -28,31 +28,46 @@ namespace CalendarWebApi.Controllers
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
-        {
-            return "value";
+        public async Task<ActionResult> Get(int id)
+        {           
+            EventQueryModel eventQueryModel = new EventQueryModel();
+            eventQueryModel.Id = id;
+            List<Calendar> calendars = await repository.GetCalendar(eventQueryModel);
+            return StatusCode(200, calendars.ToArray());
         }
-
-        // POST api/values
-        [HttpPost]
-        public async Task<ActionResult> Post([FromBody] Calendar calendarParam)
-        {
-            var calendar =  await repository.AddEvent(calendarParam);
-            return StatusCode(201, calendar);
-        }
+                
+        [HttpGet()]
+        [Route("query")]
+        public async Task<ActionResult> Get(string location)
+        {         
+            EventQueryModel eventQueryModel = new EventQueryModel();
+            eventQueryModel.Location = location;
+          
+            var calendar = await repository.GetCalendar(eventQueryModel);
+            return StatusCode(200, calendar.ToArray());
+          
+        }        
+        
 
         // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut()]
+        public async Task<ActionResult> Put(EventQueryModel eventQueryModel)
         {
+            var calendar = new Calendar {Name = "ChangedEvent3", Location  = "Alaska" };
+            var calendarReturn = await repository.UpdateEvent(calendar);
+            return StatusCode(204, calendarReturn);
         }
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
+            bool doCalendarExist = false;
             List<Calendar> calendars = await repository.GetCalendar();
-            var doCalendarExist = calendars.Exists(c => c.Id == id);
+            if(calendars != null)
+            {
+                doCalendarExist = calendars.Exists(c => c.Id == id);
+            }            
             if (doCalendarExist)
             {
                 var calendar = await repository.DeleteEvent(calendars[calendars.FindIndex(c => c.Id == id)]);
@@ -61,8 +76,7 @@ namespace CalendarWebApi.Controllers
             else
             {
                 return StatusCode(404);
-            }
-            
+            }            
         }
     }
 }
