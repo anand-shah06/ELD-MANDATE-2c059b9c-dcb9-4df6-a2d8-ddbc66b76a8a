@@ -19,7 +19,7 @@ namespace CalendarWebApi.Controllers
             repository = repositoryParam;
         }
         // GET api/values
-        [HttpGet("{id}")]
+        [HttpGet("{id}")]   // Finally it was checked and tested.
         public async Task<ActionResult> Get()
         {
             var calendars = await repository.GetCalendar();
